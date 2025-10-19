@@ -29,21 +29,31 @@ template<typename... Include, typename... Exclude>
 class View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>
 {
 public:
-  View(std::shared_ptr<ComponentsManager> manager);
+  View(std::shared_ptr<ComponentsManager> componentsManager);
+  void UpdateView();
 
 private:
   std::tuple<std::shared_ptr<ComponentArray<Include>>...>
     includedComponentArrays;
+  std::shared_ptr<ComponentsManager> manager;
 };
 
 template<typename... Include, typename... Exclude>
 inline View<IncludedComponentList<Include...>,
             ExcludedComponentList<Exclude...>>::
-  View(std::shared_ptr<ComponentsManager> manager)
+  View(std::shared_ptr<ComponentsManager> componentsManager)
+  : manager(componentsManager)
 {
   includedComponentArrays =
     std::make_tuple(manager->GetComponentArray<Include>()...);
+  UpdateView();
+}
 
+template<typename... Include, typename... Exclude>
+inline void
+View<IncludedComponentList<Include...>,
+     ExcludedComponentList<Exclude...>>::UpdateView()
+{
   auto getEntityLists = [](auto&& componentArrays) {
     return std::array{ componentArrays->GetEntityList() };
   };
@@ -54,7 +64,11 @@ inline View<IncludedComponentList<Include...>,
   size_t smallestIndex = 0;
   size_t smallestSize = 9999;
 
-  for (int i = 0; i < entityArrays.size(); ++i) {
+  auto entityInSet =
+    [](const auto& map) { return map.find(entity) != map.end(); }
+
+  for (int i = 0; i < entityArrays.size(); ++i)
+  {
     if (entityArrays[i].size() < smallestSize) {
       smallestSize = entityArrays[i].size();
       smallestIndex = i;
@@ -66,10 +80,8 @@ inline View<IncludedComponentList<Include...>,
   std::unordered_set<Entity> included;
 
   for (auto& [entity, _] : entityArrays[0]) {
-    auto inSet = std::all_of(
-      entityArrays.begin() + 1, entityArrays.end(), [](const auto& map) {
-        return map.find(entity) != map.end();
-      });
+    auto inSet =
+      std::all_of(entityArrays.begin() + 1, entityArrays.end(), entityInSet);
 
     if (inSet) {
       included.insert(entity);
@@ -82,13 +94,11 @@ inline View<IncludedComponentList<Include...>,
     std::invoke(getEntityLists, manager->GetComponentArray<Exclude>()...);
 
   for (auto& entity : included) {
-    auto inSet = std::all_of(
-      entityArrays.begin() + 1, entityArrays.end(), [](const auto& map) {
-        return map.find(entity) != map.end();
-      });
+    auto inSet = std::any_of(
+      excludedEntityArrays.begin(), excludedEntityArrays.end(), entityInSet);
 
     if (inSet) {
-      included.insert(entity);
+      included.erase(entity);
     }
   }
 }
