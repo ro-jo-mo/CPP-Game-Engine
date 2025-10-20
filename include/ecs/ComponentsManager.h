@@ -33,8 +33,9 @@ ComponentsManager::RegisterComponent()
   }
   signatureIndexToComponent[componentArrays.size()] = typeid(T);
   componentToSignatureIndex[typeid(T)] = componentArrays.size();
-  componentArrays.insert({ typeid(T), std::make_shared<ComponentArray<T>>() });
+  componentArrays[typeid(T)] = std::make_shared<ComponentArray<T>>();
 }
+
 template<typename T>
 inline std::shared_ptr<ComponentArray<T>>
 ComponentsManager::GetComponentArray()

@@ -1,5 +1,7 @@
 #include "System.h"
+#include "SystemManager.h"
 #include "Types.h"
+#include <memory>
 #include <typeindex>
 #include <unordered_map>
 #include <unordered_set>
@@ -8,6 +10,8 @@
 class ScheduleGraph
 {
 public:
+  ScheduleGraph(auto systemManager)
+    : manager(systemManager) {};
   template<typename T>
   void AddNode();
   template<typename From, typename To>
@@ -15,10 +19,19 @@ public:
   void Execute();
 
 private:
-  std::unordered_map<std::type_index, std::vector<std::type_index>>
+  void ExecuteSystem(std::type_index id,
+                     std::unordered_set<std::type_index>& executed);
+  bool CheckRequirements(std::type_index id,
+                         std::unordered_set<std::type_index>& executed);
+  void RecursivelyExecute(std::type_index id,
+                          std::unordered_set<std::type_index>& executed);
+
+  std::unordered_map<std::type_index, std::unordered_set<std::type_index>>
     adjacencyList;
-  std::unordered_set<std::type_index> entryPoints;
-  std::unordered_map<std::type_index, System> idToSystem;
+  std::unordered_map<std::type_index, std::unordered_set<std::type_index>>
+    requirements;
+  std::unordered_map<std::type_index, std::unique_ptr<System>> idToSystem;
+  std::shared_ptr<SystemManager> manager;
 };
 
 template<typename T>
@@ -28,15 +41,13 @@ ScheduleGraph::AddNode()
   static_assert(std::is_base_of<System, T>::value, "Must be a system type");
 
   auto id = typeid(T);
-  entryPoints.insert(id);
-  adjacencyList[id];
-  idToSystem[id] = T();
+  idToSystem[id] = T::Create
 }
-
+// A -> B, B needs A to run first
 template<typename From, typename To>
 inline void
 ScheduleGraph::AddEdge()
 {
-  entryPoints.erase(typeid(To));
-  adjacencyList.at(typeid(From)).push_back(typeid(To));
+  adjacencyList[typeid(From)].insert(typeid(To));
+  requirements[typeid(To)].insert(From);
 }

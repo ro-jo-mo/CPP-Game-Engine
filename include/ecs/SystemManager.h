@@ -1,5 +1,4 @@
 #include "ComponentsManager.h"
-#include "System.h"
 #include "View.h"
 #include <array>
 #include <memory>
@@ -15,9 +14,8 @@ public:
   template<typename FirstComponent,
            typename... OtherComponents,
            typename... ExcludedComponents>
-  View<IncludedComponentList<TypeStorage<FirstComponent>,
-                             TypeStorage<OtherComponents...>>,
-       ExcludedComponentList<TypeStorage<ExcludedComponents...>>>
+  View<IncludedComponentList<FirstComponent, OtherComponents...>,
+       ExcludedComponentList<ExcludedComponents...>>
   CreateView(ExcludedComponentList<ExcludedComponents...> excluded =
                ExcludedComponentList{});
 
@@ -28,14 +26,10 @@ private:
 template<typename FirstComponent,
          typename... OtherComponents,
          typename... ExcludedComponents>
-inline View<IncludedComponentList<TypeStorage<FirstComponent>,
-                                  TypeStorage<OtherComponents...>>,
-            ExcludedComponentList<TypeStorage<ExcludedComponents...>>>
+inline View<IncludedComponentList<FirstComponent, OtherComponents...>,
+            ExcludedComponentList<ExcludedComponents...>>
 SystemManager::CreateView(ExcludedComponentList<ExcludedComponents...> excluded)
 {
-  // Need to find all component arrays, and then find the common entities
-  View<IncludedComponentList<TypeStorage<FirstComponent>,
-                             TypeStorage<OtherComponents...>>,
-       ExcludedComponentList<TypeStorage<ExcludedComponents...>>>
-  view();
+  return View<IncludedComponentList<FirstComponent, OtherComponents...>,
+              ExcludedComponentList<ExcludedComponents...>>(this);
 }

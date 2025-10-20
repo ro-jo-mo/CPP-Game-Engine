@@ -1,11 +1,9 @@
-#include "Ecs.h"
-#include "Types.h"
-#include <typeindex>
-#include <vector>
+#include "SystemManager.h"
+#include <memory>
 
 class System
 {
 public:
-  System(Ecs ecs);
-  virtual void ExecuteSystem() = 0;
+  System(SystemManager manager) {};
+  virtual void Execute() = 0;
 };

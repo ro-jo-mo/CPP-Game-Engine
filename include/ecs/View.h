@@ -22,11 +22,18 @@ template<typename... T>
 struct ExcludedComponentList : TypeList<T>
 {};
 
+class IView
+{
+public:
+  virtual void UpdateViewXXX() = 0;
+};
+
 template<typename, typename>
 class View;
 
 template<typename... Include, typename... Exclude>
 class View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>
+
 {
 public:
   View(std::shared_ptr<ComponentsManager> componentsManager);
@@ -102,3 +109,11 @@ View<IncludedComponentList<Include...>,
     }
   }
 }
+
+template<typename, typename>
+class temp : public IView
+{};
+template<typename... Include, typename... Exclude>
+class temp<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>
+  : public IView
+{};
