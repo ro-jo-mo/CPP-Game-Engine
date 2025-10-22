@@ -1,3 +1,4 @@
-class Ecs {
+#pragma once
 
-};
+class Ecs
+{};

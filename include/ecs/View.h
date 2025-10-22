@@ -1,7 +1,10 @@
+#pragma once
+
 #include "ComponentArray.h"
 #include "ComponentsManager.h"
 #include "Types.h"
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <tuple>
 #include <unordered_set>
@@ -25,7 +28,7 @@ struct ExcludedComponentList : TypeList<T>
 class IView
 {
 public:
-  virtual void UpdateViewXXX() = 0;
+  void UpdateView();
 };
 
 template<typename, typename>
@@ -33,16 +36,53 @@ class View;
 
 template<typename... Include, typename... Exclude>
 class View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>
-
+  : public IView
 {
 public:
   View(std::shared_ptr<ComponentsManager> componentsManager);
-  void UpdateView();
+  void UpdateView() override;
+  std::tuple<Include&...> Get(Entity entity);
+
+  class Iterator
+  {
+  public:
+    using iterator_category = std::forward_iterator_tag;
+    Iterator(Iter currentIter,
+             Iter endIter,
+             View<IncludedComponentList<Include...>,
+                  ExcludedComponentList<Exclude...>>& viewRef)
+      : current(currentIter)
+      , end(endIter)
+      , view(viewRef) {};
+
+    bool operator!=(const Iterator& other) const
+    {
+      return current != other.current;
+    }
+
+    void operator++() { ++current; }
+
+    std::tuple<Include&...> operator*()
+    {
+      Entity entity = *current;
+      return view.Get(entity);
+    }
+
+  private:
+    using Iter = std::unordered_set::iterator;
+    Iter current;
+    Iter end;
+    View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>&
+      view;
+  };
+  Iterator begin() { return Iterator(included.begin(), included.end(), &this); }
+  Iterator end() { return Iterator(included.end(), included.end(), &this); }
 
 private:
   std::tuple<std::shared_ptr<ComponentArray<Include>>...>
     includedComponentArrays;
   std::shared_ptr<ComponentsManager> manager;
+  std::unordered_set<Entity> included;
 };
 
 template<typename... Include, typename... Exclude>
@@ -84,7 +124,7 @@ View<IncludedComponentList<Include...>,
   // put smallest list at the front
   std::swap(entityArrays[0], entityArrays[smallestIndex]);
 
-  std::unordered_set<Entity> included;
+  included.clear();
 
   for (auto& [entity, _] : entityArrays[0]) {
     auto inSet =
@@ -110,10 +150,10 @@ View<IncludedComponentList<Include...>,
   }
 }
 
-template<typename, typename>
-class temp : public IView
-{};
 template<typename... Include, typename... Exclude>
-class temp<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>
-  : public IView
-{};
+inline std::tuple<Include&...>
+View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>::Get(
+  Entity entity)
+{
+  return std::make_tuple(std::get<Include>(arrays)->GetComponent(entity)...)
+}

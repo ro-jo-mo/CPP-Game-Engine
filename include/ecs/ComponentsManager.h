@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ComponentArray.h"
 #include "Types.h"
 #include <array>
@@ -14,8 +15,12 @@ public:
   template<typename T>
   T& GetComponent(Entity entity);
   template<typename T>
+  void AddComponent(Entity entity, T component);
+  template<typename T>
+  void RemoveComponent(Entity entity);
+  template<typename T>
   std::shared_ptr<ComponentArray<T>> GetComponentArray();
-  void DeleteEntity(Entity entity);
+  void DestroyEntity(Entity entity);
 
 private:
   std::unordered_map<std::type_index, std::shared_ptr<IComponentArray>>
@@ -34,6 +39,20 @@ ComponentsManager::RegisterComponent()
   signatureIndexToComponent[componentArrays.size()] = typeid(T);
   componentToSignatureIndex[typeid(T)] = componentArrays.size();
   componentArrays[typeid(T)] = std::make_shared<ComponentArray<T>>();
+}
+
+template<typename T>
+inline void
+ComponentsManager::AddComponent(Entity entity, T component)
+{
+  GetComponentArray<T>()->AddComponent(entity, component);
+}
+
+template<typename T>
+inline void
+ComponentsManager::RemoveComponent(Entity entity)
+{
+  GetComponentArray<T>()->RemoveComponent(entity);
 }
 
 template<typename T>

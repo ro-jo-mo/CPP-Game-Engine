@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ComponentsManager.h"
 #include "View.h"
 #include <array>
@@ -14,22 +16,29 @@ public:
   template<typename FirstComponent,
            typename... OtherComponents,
            typename... ExcludedComponents>
-  View<IncludedComponentList<FirstComponent, OtherComponents...>,
-       ExcludedComponentList<ExcludedComponents...>>
+  std::shared_ptr<
+    View<IncludedComponentList<FirstComponent, OtherComponents...>,
+         ExcludedComponentList<ExcludedComponents...>>>
   CreateView(ExcludedComponentList<ExcludedComponents...> excluded =
                ExcludedComponentList{});
+  void UpdateViews();
 
 private:
   std::shared_ptr<ComponentsManager> componentsManager;
+  std::vector<std::shared_ptr<IView>> views;
 };
 
 template<typename FirstComponent,
          typename... OtherComponents,
          typename... ExcludedComponents>
-inline View<IncludedComponentList<FirstComponent, OtherComponents...>,
-            ExcludedComponentList<ExcludedComponents...>>
+inline std::shared_ptr<
+  View<IncludedComponentList<FirstComponent, OtherComponents...>,
+       ExcludedComponentList<ExcludedComponents...>>>
 SystemManager::CreateView(ExcludedComponentList<ExcludedComponents...> excluded)
 {
-  return View<IncludedComponentList<FirstComponent, OtherComponents...>,
-              ExcludedComponentList<ExcludedComponents...>>(this);
+  auto view = std::make_shared(
+    View<IncludedComponentList<FirstComponent, OtherComponents...>,
+         ExcludedComponentList<ExcludedComponents...>>(this));
+  views.push_back(view);
+  return view;
 }

@@ -2,10 +2,10 @@
 #include "ecs/ComponentArray.h"
 #include "ecs/Types.h"
 
-
-void ComponentsManager::DeleteEntity(Entity entity)
+void
+ComponentsManager::DestroyEntity(Entity entity)
 {
-	for (const auto&  [_, componentArrayPtr] : componentArrays) {
-		componentArrayPtr->DeleteEntity(entity);
-	}
+  for (const auto& [_, componentArrayPtr] : componentArrays) {
+    componentArrayPtr->DestroyEntity(entity);
+  }
 }

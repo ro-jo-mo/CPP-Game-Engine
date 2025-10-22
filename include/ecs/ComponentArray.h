@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ComponentsManager.h"
 #include "Types.h"
 #include <array>
@@ -7,20 +8,20 @@
 class IComponentArray
 {
 public:
-  virtual void DeleteEntity(Entity entity) = 0;
+  virtual void DestroyEntity(Entity entity) = 0;
 };
 
 template<typename T>
 class ComponentArray : public IComponentArray
 {
 public:
-  void DeleteEntity(Entity entity) override
+  void DestroyEntity(Entity entity) override
   {
     if (entityToComponent.find(entity) != entityToComponent.end()) {
       RemoveComponent(entity);
     }
   }
-  void AddComponent(T component, Entity entity);
+  void AddComponent(Entity entity, T component);
   void RemoveComponent(Entity entity);
   T& GetComponent(Entity entity);
   const std::unordered_map<Entity, size_t>& GetEntityList();
@@ -34,7 +35,7 @@ private:
 
 template<typename T>
 inline void
-ComponentArray<T>::AddComponent(T component, Entity entity)
+ComponentArray<T>::AddComponent(Entity entity, T component)
 {
   components[totalComponents] = component;
   entityToComponent[entity] = totalComponents;

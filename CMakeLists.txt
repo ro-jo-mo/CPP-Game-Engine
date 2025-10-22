@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
- "src/EntityManger.cpp" "include/ecs/EntityManager.h" "include/ecs/Types.h" "include/ecs/Ecs.h" "src/Ecs.cpp" "include/ecs/ComponentArray.h" "include/ecs/ComponentsManager.h"  "src/ComponentsManager.cpp" "include/ecs/System.h" "include/ecs/View.h" "include/ecs/SystemManager.h" "include/ecs/ScheduleGraph.h" "src/ScheduleGraph.cpp")
+ "src/EntityManger.cpp" "include/ecs/EntityManager.h" "include/ecs/Types.h" "include/ecs/Ecs.h" "src/Ecs.cpp" "include/ecs/ComponentArray.h" "include/ecs/ComponentsManager.h"  "src/ComponentsManager.cpp" "include/ecs/System.h" "include/ecs/View.h" "include/ecs/SystemManager.h" "include/ecs/ScheduleGraph.h" "src/ScheduleGraph.cpp" "src/SystemManager.cpp" "include/ecs/ResourceManager.h" "include/ecs/World.h" "src/World.cpp")
 
 
 target_include_directories(${PROJECT_NAME}
