@@ -28,7 +28,7 @@ struct ExcludedComponentList : TypeList<T>
 class IView
 {
 public:
-  void UpdateView();
+  virtual void UpdateView() = 0;
 };
 
 template<typename, typename>
@@ -47,13 +47,17 @@ public:
   {
   public:
     using iterator_category = std::forward_iterator_tag;
+
+    using Iter = std::unordered_set<Entity>::iterator;
+
+    template<typename... Include, typename... Exclude>
     Iterator(Iter currentIter,
              Iter endIter,
              View<IncludedComponentList<Include...>,
                   ExcludedComponentList<Exclude...>>& viewRef)
       : current(currentIter)
       , end(endIter)
-      , view(viewRef) {};
+      , view(viewRef){};
 
     bool operator!=(const Iterator& other) const
     {
@@ -69,7 +73,6 @@ public:
     }
 
   private:
-    using Iter = std::unordered_set::iterator;
     Iter current;
     Iter end;
     View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>&
@@ -111,11 +114,7 @@ View<IncludedComponentList<Include...>,
   size_t smallestIndex = 0;
   size_t smallestSize = 9999;
 
-  auto entityInSet =
-    [](const auto& map) { return map.find(entity) != map.end(); }
-
-  for (int i = 0; i < entityArrays.size(); ++i)
-  {
+  for (int i = 0; i < entityArrays.size(); ++i) {
     if (entityArrays[i].size() < smallestSize) {
       smallestSize = entityArrays[i].size();
       smallestIndex = i;
@@ -127,8 +126,10 @@ View<IncludedComponentList<Include...>,
   included.clear();
 
   for (auto& [entity, _] : entityArrays[0]) {
-    auto inSet =
-      std::all_of(entityArrays.begin() + 1, entityArrays.end(), entityInSet);
+    auto inSet = std::all_of(
+      entityArrays.begin() + 1, entityArrays.end(), [entity](auto& map) {
+        return map.find(entity) != map.end();
+      });
 
     if (inSet) {
       included.insert(entity);
@@ -142,7 +143,9 @@ View<IncludedComponentList<Include...>,
 
   for (auto& entity : included) {
     auto inSet = std::any_of(
-      excludedEntityArrays.begin(), excludedEntityArrays.end(), entityInSet);
+      excludedEntityArrays.begin(),
+      excludedEntityArrays.end(),
+      [entity](auto& map) { return map.find(entity) != map.end(); });
 
     if (inSet) {
       included.erase(entity);
@@ -155,5 +158,6 @@ inline std::tuple<Include&...>
 View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>::Get(
   Entity entity)
 {
-  return std::make_tuple(std::get<Include>(arrays)->GetComponent(entity)...)
+  return std::make_tuple(
+    std::get<Include>(includedComponentArrays)->GetComponent(entity)...);
 }

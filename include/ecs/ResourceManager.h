@@ -1,13 +1,11 @@
 #pragma once
 
+#include "Resource.h"
 #include "Types.h"
 #include <memory>
 #include <tuple>
 #include <typeindex>
 #include <unordered_map>
-
-class Resource
-{};
 
 class ResourceManager
 {

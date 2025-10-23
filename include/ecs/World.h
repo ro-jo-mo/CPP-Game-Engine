@@ -15,7 +15,7 @@ public:
   void AddComponent(Entity entity, Component component);
   template<typename Component>
   void RemoveComponent(Entity entity);
-  void Flush();
+  bool Flush();
 
 private:
   class Command
@@ -69,7 +69,7 @@ inline Entity
 World::Spawn(Components... components)
 {
   auto id = entityManager.AllocateEntity();
-  AddComponent(id, components)...;
+  ((void)AddComponent(id, components), ...);
   return id;
 }
 

@@ -7,7 +7,7 @@ World::Destroy(Entity entity)
   componentsManager.DestroyEntity(entity);
 }
 
-void
+bool
 World::Flush()
 {
   // order
@@ -24,4 +24,9 @@ World::Flush()
     entityManager.DestroyEntity(ent);
     componentsManager.DestroyEntity(ent);
   }
+  auto changesMade = toAdd.size() + toRemove.size() + toDestroy.size() > 0;
+  toAdd.clear();
+  toRemove.clear();
+  toDestroy.clear();
+  return changesMade;
 }

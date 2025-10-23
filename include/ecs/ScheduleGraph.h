@@ -43,13 +43,13 @@ ScheduleGraph::AddNode()
   static_assert(std::is_base_of<System, T>::value, "Must be a system type");
 
   auto id = typeid(T);
-  idToSystem[id] = T::Create
+  idToSystem[id] = T::Create;
 }
-// A -> B, B needs A to run first
+
 template<typename From, typename To>
 inline void
 ScheduleGraph::AddEdge()
 {
   adjacencyList[typeid(From)].insert(typeid(To));
-  requirements[typeid(To)].insert(From);
+  requirements[typeid(To)].insert(typeid(From));
 }
