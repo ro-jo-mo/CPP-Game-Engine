@@ -1,19 +1,14 @@
 #pragma once
 
-class Schedule
-{
-public:
-  virtual void Run() = 0;
+enum Schedule : std::size_t {
+  PreStartup,
+  Startup,
+  PostStartup,
+  PreUpdate,
+  Update,
+  PostUpdate,
+  PreFixedUpdate,
+  FixedUpdate,
+  PostFixedUpdate,
+  ScheduleSize
 };
-
-class DynamicSchedule
-{};
-
-class FixedSchedule
-{
-private:
-  float timestep;
-};
-
-class StartupSchedule
-{};

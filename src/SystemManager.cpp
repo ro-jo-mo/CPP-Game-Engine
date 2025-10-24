@@ -1,9 +1,8 @@
 #include "ecs/SystemManager.h"
 
 void
-SystemManager::UpdateViews()
-{
-  for (auto& view : views) {
+SystemManager::UpdateViews() const {
+  for (const auto &view: views) {
     view->UpdateView();
   }
 }

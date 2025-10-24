@@ -4,30 +4,32 @@
 #include "ComponentsManager.h"
 #include "Types.h"
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <memory>
 #include <tuple>
 #include <unordered_set>
 
 template<typename T>
-struct TypeStorage
-{};
+struct TypeStorage {
+};
 
 template<typename... T>
-struct TypeList
-{};
+struct TypeList {
+};
 
 template<typename... T>
-struct IncludedComponentList : TypeList<T>
-{};
+struct IncludedComponentList : TypeList<T...> {
+};
 
 template<typename... T>
-struct ExcludedComponentList : TypeList<T>
-{};
+struct ExcludedComponentList : TypeList<T...> {
+};
 
-class IView
-{
+class IView {
 public:
+  virtual ~IView() = default;
+
   virtual void UpdateView() = 0;
 };
 
@@ -35,39 +37,38 @@ template<typename, typename>
 class View;
 
 template<typename... Include, typename... Exclude>
-class View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>
-  : public IView
-{
+class View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...> > final
+    : public IView {
 public:
-  View(std::shared_ptr<ComponentsManager> componentsManager);
-  void UpdateView() override;
-  std::tuple<Include&...> Get(Entity entity);
+  explicit View(std::shared_ptr<ComponentsManager> componentsManager);
 
-  class Iterator
-  {
+  void UpdateView() override;
+
+  std::tuple<Include &...> Get(Entity entity);
+
+  class Iterator {
   public:
     using iterator_category = std::forward_iterator_tag;
 
     using Iter = std::unordered_set<Entity>::iterator;
 
-    template<typename... Include, typename... Exclude>
+
     Iterator(Iter currentIter,
              Iter endIter,
              View<IncludedComponentList<Include...>,
-                  ExcludedComponentList<Exclude...>>& viewRef)
+               ExcludedComponentList<Exclude...> > &viewRef)
       : current(currentIter)
-      , end(endIter)
-      , view(viewRef){};
+        , end(endIter)
+        , view(viewRef) {
+    };
 
-    bool operator!=(const Iterator& other) const
-    {
+    bool operator!=(const Iterator &other) const {
       return current != other.current;
     }
 
     void operator++() { ++current; }
 
-    std::tuple<Include&...> operator*()
-    {
+    std::tuple<Include &...> operator*() {
       Entity entity = *current;
       return view.Get(entity);
     }
@@ -75,44 +76,43 @@ public:
   private:
     Iter current;
     Iter end;
-    View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>&
-      view;
+    View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...> > &
+    view;
   };
+
   Iterator begin() { return Iterator(included.begin(), included.end(), &this); }
   Iterator end() { return Iterator(included.end(), included.end(), &this); }
 
 private:
-  std::tuple<std::shared_ptr<ComponentArray<Include>>...>
-    includedComponentArrays;
+  std::tuple<std::shared_ptr<ComponentArray<Include> >...>
+  includedComponentArrays;
   std::shared_ptr<ComponentsManager> manager;
   std::unordered_set<Entity> included;
 };
 
 template<typename... Include, typename... Exclude>
 inline View<IncludedComponentList<Include...>,
-            ExcludedComponentList<Exclude...>>::
-  View(std::shared_ptr<ComponentsManager> componentsManager)
-  : manager(componentsManager)
-{
+  ExcludedComponentList<Exclude...> >::
+View(std::shared_ptr<ComponentsManager> componentsManager)
+  : manager(componentsManager) {
   includedComponentArrays =
-    std::make_tuple(manager->GetComponentArray<Include>()...);
+      std::make_tuple(manager->GetComponentArray<Include>()...);
   UpdateView();
 }
 
 template<typename... Include, typename... Exclude>
 inline void
 View<IncludedComponentList<Include...>,
-     ExcludedComponentList<Exclude...>>::UpdateView()
-{
-  auto getEntityLists = [](auto&& componentArrays) {
-    return std::array{ componentArrays->GetEntityList() };
+  ExcludedComponentList<Exclude...> >::UpdateView() {
+  auto getEntityLists = [](auto &&componentArrays) {
+    return std::array{componentArrays->GetEntityList()};
   };
 
   auto entityArrays = std::apply(getEntityLists, includedComponentArrays);
 
   // find smallest array, use it as the base
   size_t smallestIndex = 0;
-  size_t smallestSize = 9999;
+  size_t smallestSize = 99999;
 
   for (int i = 0; i < entityArrays.size(); ++i) {
     if (entityArrays[i].size() < smallestSize) {
@@ -125,9 +125,9 @@ View<IncludedComponentList<Include...>,
 
   included.clear();
 
-  for (auto& [entity, _] : entityArrays[0]) {
+  for (auto &[entity, _]: entityArrays[0]) {
     auto inSet = std::all_of(
-      entityArrays.begin() + 1, entityArrays.end(), [entity](auto& map) {
+      entityArrays.begin() + 1, entityArrays.end(), [entity](auto &map) {
         return map.find(entity) != map.end();
       });
 
@@ -139,13 +139,13 @@ View<IncludedComponentList<Include...>,
   // for each excluded list, does entity exist inside
   // if so, remove
   auto excludedEntityArrays =
-    std::invoke(getEntityLists, manager->GetComponentArray<Exclude>()...);
+      std::invoke(getEntityLists, manager->GetComponentArray<Exclude>()...);
 
-  for (auto& entity : included) {
+  for (auto &entity: included) {
     auto inSet = std::any_of(
       excludedEntityArrays.begin(),
       excludedEntityArrays.end(),
-      [entity](auto& map) { return map.find(entity) != map.end(); });
+      [entity](auto &map) { return map.find(entity) != map.end(); });
 
     if (inSet) {
       included.erase(entity);
@@ -154,10 +154,9 @@ View<IncludedComponentList<Include...>,
 }
 
 template<typename... Include, typename... Exclude>
-inline std::tuple<Include&...>
-View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...>>::Get(
-  Entity entity)
-{
+inline std::tuple<Include &...>
+View<IncludedComponentList<Include...>, ExcludedComponentList<Exclude...> >::Get(
+  Entity entity) {
   return std::make_tuple(
     std::get<Include>(includedComponentArrays)->GetComponent(entity)...);
 }

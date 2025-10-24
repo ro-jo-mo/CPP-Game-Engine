@@ -5,40 +5,37 @@
 #include <array>
 #include <memory>
 
-class SystemManager
-{
+class SystemManager {
 public:
-  SystemManager(std::shared_ptr<ComponentsManager> manager)
-    : componentsManager(manager)
-  {
+  SystemManager(const ComponentsManager &manager)
+    : componentsManager(manager) {
   }
 
   template<typename FirstComponent,
-           typename... OtherComponents,
-           typename... ExcludedComponents>
+    typename... OtherComponents,
+    typename... ExcludedComponents>
   std::shared_ptr<
     View<IncludedComponentList<FirstComponent, OtherComponents...>,
-         ExcludedComponentList<ExcludedComponents...>>>
+      ExcludedComponentList<ExcludedComponents...> > >
   CreateView(ExcludedComponentList<ExcludedComponents...> excluded =
-               ExcludedComponentList{});
-  void UpdateViews();
+      ExcludedComponentList{});
+
+  void UpdateViews() const;
 
 private:
-  std::shared_ptr<ComponentsManager> componentsManager;
-  std::vector<std::shared_ptr<IView>> views;
+  ComponentsManager componentsManager;
+  std::vector<std::shared_ptr<IView> > views;
 };
 
 template<typename FirstComponent,
-         typename... OtherComponents,
-         typename... ExcludedComponents>
+  typename... OtherComponents,
+  typename... ExcludedComponents>
 inline std::shared_ptr<
   View<IncludedComponentList<FirstComponent, OtherComponents...>,
-       ExcludedComponentList<ExcludedComponents...>>>
-SystemManager::CreateView(ExcludedComponentList<ExcludedComponents...> excluded)
-{
-  auto view = std::make_shared(
-    View<IncludedComponentList<FirstComponent, OtherComponents...>,
-         ExcludedComponentList<ExcludedComponents...>>(this));
+    ExcludedComponentList<ExcludedComponents...> > >
+SystemManager::CreateView(ExcludedComponentList<ExcludedComponents...> excluded) {
+  auto view = std::make_shared<View<IncludedComponentList<FirstComponent, OtherComponents...>,
+    ExcludedComponentList<ExcludedComponents...> > >(this);
   views.push_back(view);
   return view;
 }

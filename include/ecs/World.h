@@ -5,99 +5,101 @@
 #include "Types.h"
 #include <vector>
 
-class World
-{
+#include "Resource.h"
+
+class World : public Resource {
 public:
+  World(ComponentsManager &componentMngr, EntityManager &entityMngr) : componentsManager(componentMngr),
+                                                                       entityManager(entityMngr) {
+  }
+
   template<typename... Components>
   Entity Spawn(Components... components);
+
   void Destroy(Entity entity);
+
   template<typename Component>
   void AddComponent(Entity entity, Component component);
+
   template<typename Component>
   void RemoveComponent(Entity entity);
+
   bool Flush();
 
 private:
-  class Command
-  {
+  class Command {
   public:
     virtual void Execute() = 0;
   };
+
   template<typename T>
-  class AddCommand : public Command
-  {
+  class AddCommand : public Command {
   public:
-    template<typename T>
-    AddCommand(Entity ent, T comp, World& wld)
+    AddCommand(const Entity ent, T comp, World &wld)
       : entity(ent)
-      , component(comp)
-      , world(wld){};
+        , component(comp)
+        , world(wld) {
+    };
 
     void Execute() override;
 
   private:
     Entity entity;
     T component;
-    World& world;
+    World &world;
   };
 
   template<typename T>
-  class RemoveCommand : public Command
-  {
+  class RemoveCommand : public Command {
   public:
-    template<typename T>
-    RemoveCommand(Entity ent, World& wld)
+    RemoveCommand(const Entity ent, World &wld)
       : entity(ent)
-      , world(wld){};
+        , world(wld) {
+    };
 
     void Execute() override;
 
   private:
     Entity entity;
-    World& world;
+    World &world;
   };
 
-  ComponentsManager& componentsManager;
-  EntityManager& entityManager;
-  std::vector<std::unique_ptr<Command>> toAdd;
-  std::vector<std::unique_ptr<Command>> toRemove;
+  ComponentsManager &componentsManager;
+  EntityManager &entityManager;
+  std::vector<std::unique_ptr<Command> > toAdd;
+  std::vector<std::unique_ptr<Command> > toRemove;
   std::vector<Entity> toDestroy;
 };
 
 template<typename... Components>
 inline Entity
-World::Spawn(Components... components)
-{
+World::Spawn(Components... components) {
   auto id = entityManager.AllocateEntity();
-  ((void)AddComponent(id, components), ...);
+  ((void) AddComponent(id, components), ...);
   return id;
 }
 
 template<typename Component>
 inline void
-World::AddComponent(Entity entity, Component component)
-{
+World::AddComponent(Entity entity, Component component) {
   toAdd.push_back(
-    std::make_unique(AddCommand<Component>(entity, component, *this)));
+    std::make_unique<AddCommand<Component> >(entity, component, *this));
 }
 
 template<typename Component>
 inline void
-World::RemoveComponent(Entity entity)
-{
-  toRemove.push_back(std::make_unique(RemoveCommand<Component>(entity, *this)));
+World::RemoveComponent(Entity entity) {
+  toRemove.push_back(std::make_unique<RemoveCommand<Component> >(entity, *this));
 }
 
 template<typename T>
 inline void
-World::AddCommand<T>::Execute()
-{
+World::AddCommand<T>::Execute() {
   world.componentsManager.AddComponent(entity, component);
 }
 
 template<typename T>
 inline void
-World::RemoveCommand<T>::Execute()
-{
-  world.componentsManager.RemoveComponent(entity);
+World::RemoveCommand<T>::Execute() {
+  world.componentsManager.RemoveComponent<T>(entity);
 }

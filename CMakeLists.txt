@@ -1,17 +1,20 @@
-﻿cmake_minimum_required (VERSION 3.30)
+﻿cmake_minimum_required(VERSION 3.30)
 
-project ("GameEngine")
+project("GameEngine")
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(${PROJECT_NAME}
-    src/main.cpp
- "src/EntityManger.cpp" "include/ecs/EntityManager.h" "include/ecs/Types.h" "include/ecs/Ecs.h" "src/Ecs.cpp" "include/ecs/ComponentArray.h" "include/ecs/ComponentsManager.h"  "src/ComponentsManager.cpp" "include/ecs/System.h" "include/ecs/View.h" "include/ecs/SystemManager.h" "include/ecs/ScheduleGraph.h" "src/ScheduleGraph.cpp" "src/SystemManager.cpp" "include/ecs/ResourceManager.h" "include/ecs/World.h" "src/World.cpp" "include/ecs/Schedule.h" "include/ecs/Time.h" "include/ecs/Resource.h" "src/Time.cpp")
+        src/main.cpp
+        "src/EntityManger.cpp" "include/ecs/EntityManager.h" "include/ecs/Types.h" "include/ecs/Ecs.h" "src/Ecs.cpp" "include/ecs/ComponentArray.h" "include/ecs/ComponentsManager.h" "src/ComponentsManager.cpp" "include/ecs/System.h" "include/ecs/View.h" "include/ecs/SystemManager.h" "include/ecs/ScheduleGraph.h" "src/ScheduleGraph.cpp" "src/SystemManager.cpp" "include/ecs/ResourceManager.h" "include/ecs/World.h" "src/World.cpp" "include/ecs/Schedule.h" "include/ecs/Time.h" "include/ecs/Resource.h" "src/Time.cpp"
+        include/ecs/Plugin.h
+        include/ecs/Scheduler.h
+)
 
 
 target_include_directories(${PROJECT_NAME}
-    PRIVATE
+        PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )

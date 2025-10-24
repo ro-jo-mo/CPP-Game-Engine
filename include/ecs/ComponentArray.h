@@ -5,26 +5,27 @@
 #include <array>
 #include <unordered_map>
 
-class IComponentArray
-{
+class IComponentArray {
 public:
   virtual void DestroyEntity(Entity entity) = 0;
 };
 
 template<typename T>
-class ComponentArray : public IComponentArray
-{
+class ComponentArray : public IComponentArray {
 public:
-  void DestroyEntity(Entity entity) override
-  {
-    if (entityToComponent.find(entity) != entityToComponent.end()) {
+  void DestroyEntity(Entity entity) override {
+    if (entityToComponent.contains(entity)) {
       RemoveComponent(entity);
     }
   }
+
   void AddComponent(Entity entity, T component);
+
   void RemoveComponent(Entity entity);
-  T& GetComponent(Entity entity);
-  const std::unordered_map<Entity, size_t>& GetEntityList();
+
+  T &GetComponent(Entity entity);
+
+  const std::unordered_map<Entity, size_t> &GetEntityList();
 
 private:
   std::array<T, MAX_ENTITIES> components;
@@ -35,8 +36,7 @@ private:
 
 template<typename T>
 inline void
-ComponentArray<T>::AddComponent(Entity entity, T component)
-{
+ComponentArray<T>::AddComponent(const Entity entity, T component) {
   components[totalComponents] = component;
   entityToComponent[entity] = totalComponents;
   componentToEntity[totalComponents] = entity;
@@ -45,8 +45,7 @@ ComponentArray<T>::AddComponent(Entity entity, T component)
 
 template<typename T>
 inline void
-ComponentArray<T>::RemoveComponent(Entity entity)
-{
+ComponentArray<T>::RemoveComponent(const Entity entity) {
   auto index = entityToComponent[entity];
 
   auto last = --totalComponents;
@@ -57,16 +56,14 @@ ComponentArray<T>::RemoveComponent(Entity entity)
 }
 
 template<typename T>
-inline T&
-ComponentArray<T>::GetComponent(Entity entity)
-{
+inline T &
+ComponentArray<T>::GetComponent(const Entity entity) {
   auto index = entityToComponent[entity];
   return components[index];
 }
 
 template<typename T>
-inline const std::unordered_map<Entity, size_t>&
-ComponentArray<T>::GetEntityList()
-{
+inline const std::unordered_map<Entity, size_t> &
+ComponentArray<T>::GetEntityList() {
   return entityToComponent;
 }
