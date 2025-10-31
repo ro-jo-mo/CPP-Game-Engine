@@ -3,18 +3,28 @@
 #include "Resource.h"
 #include <chrono>
 
-class Time : public Resource
-{
-public:
-  Time(float fixedTimeStep);
-  float DeltaTime();
-  void SwitchToFixed();
-  void SwitchToDynamic();
-  void Tick();
+namespace Cel {
+  class Time : public Resource {
+  public:
+    explicit Time(float fixedTimeStep);
 
-private:
-  float dynamicDeltaTime;
-  float fixedDeltaTime;
-  float currentDelta;
-  std::chrono::steady_clock::time_point lastCheckpoint;
-};
+    float DeltaTime() const;
+
+    void SwitchToFixed();
+
+    void SwitchToDynamic();
+
+    bool FixedUpdateRequired();
+
+    void Tick();
+
+    void FixedTick();
+
+  private:
+    float dynamicDeltaTime;
+    float fixedDeltaTime;
+    float currentDelta;
+    std::chrono::steady_clock::time_point nextFixedUpdate;
+    std::chrono::steady_clock::time_point lastUpdate;
+  };
+}

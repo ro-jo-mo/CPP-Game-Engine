@@ -3,9 +3,12 @@
 #include "SystemManager.h"
 #include <memory>
 
-class System
-{
-public:
-  System(SystemManager manager) {};
-  virtual void Execute() = 0;
-};
+namespace Cel {
+  class System {
+  public:
+    explicit System(SystemManager &manager) {
+    };
+
+    virtual void Execute() = 0;
+  };
+}

@@ -1,30 +1,30 @@
 #include "ecs/World.h"
 
+using namespace Cel;
+
 void
-World::Destroy(Entity entity)
-{
+World::Destroy(const Entity entity) const {
   entityManager.DestroyEntity(entity);
   componentsManager.DestroyEntity(entity);
 }
 
 bool
-World::Flush()
-{
+World::Flush() {
   // order
   // add
   // remove
   // destroy
-  for (auto& cmd : toAdd) {
+  for (const auto &cmd: toAdd) {
     cmd->Execute();
   }
-  for (auto& cmd : toRemove) {
+  for (const auto &cmd: toRemove) {
     cmd->Execute();
   }
-  for (auto& ent : toDestroy) {
+  for (const auto &ent: toDestroy) {
     entityManager.DestroyEntity(ent);
     componentsManager.DestroyEntity(ent);
   }
-  auto changesMade = toAdd.size() + toRemove.size() + toDestroy.size() > 0;
+  const auto changesMade = toAdd.size() + toRemove.size() + toDestroy.size() > 0;
   toAdd.clear();
   toRemove.clear();
   toDestroy.clear();

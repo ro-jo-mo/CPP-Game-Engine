@@ -1,4 +1,6 @@
 #pragma once
 
-class Resource
-{};
+namespace Cel {
+    class Resource {
+    };
+}

@@ -1,6 +1,10 @@
 #pragma once
-#include "Ecs.h"
 
-class Plugin {
-    virtual void Build(Ecs &ecs) = 0;
-};
+#include "ResourceManager.h"
+#include "Scheduler.h"
+
+namespace Cel {
+    class Plugin {
+        virtual void Build(Scheduler scheduler, ResourceManager &resourceManager) = 0;
+    };
+}
